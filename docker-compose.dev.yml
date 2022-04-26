@@ -1,0 +1,20 @@
+version: '3.5'
+services:
+  api.case:
+    ports:
+      - 3300:3000
+    volumes:
+      - .:/app
+    command: sh -c "npx sequelize-cli db:migrate && npm run dev"
+
+    environment:
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_USER=test
+      - POSTGRES_DB=test
+  db:
+    environment:
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_USER=test
+      - POSTGRES_DB=test
+    volumes:
+      - ~/case_data:/var/lib/postgresql/data

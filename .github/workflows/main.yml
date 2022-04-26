@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set certificates
+      env:
+        DOCKER_CERT_PATH: certs
+      run: |
+        mkdir $DOCKER_CERT_PATH
+        echo "${{secrets.CA_CERT}}" > $DOCKER_CERT_PATH/ca.pem
+        echo "${{secrets.CLIENT_CERT}}" > $DOCKER_CERT_PATH/cert.pem
+        echo "${{secrets.CLIENT_KEY}}" > $DOCKER_CERT_PATH/key.pem
+
+    - name: Deploy to DigitalOcean
+      env:
+        DOCKER_TLS_VERIFY: 1
+        DOCKER_HOST: tcp://casetracker.co.ke:2376
+        DOCKER_CERT_PATH: certs
+        POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
+        POSTGRES_USER: ${{secrets.POSTGRES_USER}}
+        POSTGRES_DB: ${{secrets.POSTGRES_DB}}
+      run: |
+        docker-compose build
+        docker-compose down
+        docker-compose up -d
+
+    - name: Remove certs
+      run: rm -r certs
